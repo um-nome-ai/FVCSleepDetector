@@ -32,12 +32,14 @@ if not cap.isOpened():
     print("Cannot open camera")
     exit()
 
+last5_frames = np.array([0,0,0,0,0])
+
+status="Not Sleeping"
+
 while True:
     ret, frame = cap.read()
     dets = detector(frame, 1)
     vec = np.empty([68, 2], dtype = int)
-
-    status="Not Sleeping"
 
     print("Number of faces detected: {}".format(len(dets)))
     for k, d in enumerate(dets):
@@ -57,10 +59,17 @@ while True:
         right_ear=compute_EAR(vec[42:48])#compute eye aspect ratio for right eye
         left_ear=compute_EAR(vec[36:42])#compute eye aspect ratio for left eye
 
-        if (right_ear+left_ear)/2 <0.2: #if the avarage eye aspect ratio of lef and right eye less than 0.2, the status is sleeping.
-              status="sleeping"
 
-        print(status)
+        last5_frames = np.delete(np.append(last5_frames, (right_ear+left_ear)/2 < 0.2),0,0)
+        
+
+        if np.all(last5_frames) and status=="Not Sleeping": #if the avarage eye aspect ratio of lef and right eye less than 0.2, the status is sleeping.
+            status="Sleeping"
+        elif ~np.any(np.sum(last5_frames)) and status=="Sleeping":
+            status="Not Sleeping"
+        
+
+        print(status, last5_frames)
         
     cv.imshow('frame', frame)
     if cv.waitKey(1) == ord('q'):
