@@ -116,12 +116,12 @@ for file, threshold in get_test_cases():
 		# draw the total number of blinks on the frame along with
 		# the computed eye aspect ratio for the frame
 		# show the frame
-		#cv2.imshow("Frame", frame)
-		#key = cv2.waitKey(1) & 0xFF
+		cv2.imshow("Frame", frame)
+		key = cv2.waitKey(1) & 0xFF
 		frame_count += 1
 
-	pd_data = pd.DataFrame([list(item) for item in data_history.items()], columns=["Frame","Sleeping"])
-	pd_data.to_csv(f"{file[:file.rfind('.')]}-result-{threshold:.2f}.csv")
+	#pd_data = pd.DataFrame([list(item) for item in data_history.items()], columns=["Frame","Sleeping"])
+	#pd_data.to_csv(f"{file[:file.rfind('.')]}-result-{threshold:.2f}.csv")
 	# do a bit of cleanup
 	cap.release()
 	cv2.destroyAllWindows()
