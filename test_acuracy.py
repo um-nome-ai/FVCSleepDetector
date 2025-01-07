@@ -1,6 +1,7 @@
 import glob
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 labels = []
 testcases = {}
@@ -9,7 +10,7 @@ for filename in glob.glob("./tests/*.csv"):
 	name = filename[:filename.rfind(".")]
 	name = name[name.rfind("/") + 1:]
 	sections = name.split("-")
-	num = int(sections[0][1])
+	num = int(sections[0][-1])
 	if len(sections) == 2:
 		#label
 		labels.append([num, filename])
@@ -31,9 +32,18 @@ for i, labelname in labels:
 		res.append([i, thresh, ratio])
 		#print(f"acurácia do t{i} com threshold de {thresh} é: {ratio:.2f}")
 
-df = pd.DataFrame(res, columns=["Test Case", "Threshold", "Acuracy"]) \
+		precision = 100*precision_score(y_true=label['Sleeping'], y_pred=test['Sleeping'], zero_division=1.0)
+		recall = 100*recall_score(y_true=label['Sleeping'], y_pred=test['Sleeping'], zero_division=1.0)
+		f1 = 100*f1_score(y_true=label['Sleeping'], y_pred=test['Sleeping'], zero_division=1.0)
+		
+		res.append([i, thresh, precision, recall, f1])
+		#print(f"acurácia do t{i} com threshold de {thresh} é: {ratio:.2f}")
+
+#print(res)
+
+df = pd.DataFrame(res, columns=["Test Case", "Threshold", "Precision", "Recall", "f1"]) \
 	.sort_values(by=['Test Case', 'Threshold'], ascending=[True, True]) \
-	.pivot(index="Test Case", columns="Threshold", values="Acuracy")
+	.pivot(index="Test Case", columns="Threshold", values="Recall")
 
 #df.loc['Média'] = df.max(axis=1)
 #print(df)
@@ -44,8 +54,8 @@ df = pd.DataFrame(res, columns=["Test Case", "Threshold", "Acuracy"]) \
 
 fig, ax = plt.subplots()
 
-ax.set_title('Acurácia do Limite 0.4')
-ax.set_ylabel('Acurácia')
+ax.set_title('Recall do Limite 0.4')
+ax.set_ylabel('Recall')
 ax.set_xlabel("Caso Teste")
 
 # Plot the 'Age' column as a bar plot
@@ -65,12 +75,48 @@ for bar in bars:
 plt.xticks(range(9))
 
 plt.ylim(60, 100)
-plt.savefig("result2.png")
+plt.savefig("result4.png")
 
 
-#print(df.to_latex(decimal=",", float_format="%.2f"))
+print(df.to_latex(decimal=",", float_format="%.2f"))
 
 #out.to_csv("results.csv", index=False, sep=';', decimal=",")
 #ax = df.plot(kind='bar', title='Acurácia com threshold por vídeo')
 #plt.legend(loc='upper left', bbox_to_anchor=(0.98, 1), frameon=False)  # No box around the legend
 #plt.savefig("result.png")
+
+# precision
+#\begin{tabular}{lrrrrr}
+#\toprule
+#Threshold & 0,100000 & 0,300000 & 0,400000 & 0,500000 & 0,600000 \\
+#Test Case &  &  &  &  &  \\
+#\midrule
+#0 & 100,00 & 97,89 & 81,77 & 63,60 & 63,74 \\
+#1 & 100,00 & 90,32 & 66,67 & 44,28 & 44,12 \\
+#2 & 100,00 & 100,00 & 100,00 & 95,12 & 61,90 \\
+#3 & 100,00 & 100,00 & 0,00 & 0,00 & 0,00 \\
+#4 & 100,00 & 97,53 & 91,38 & 78,81 & 77,66 \\
+#5 & 100,00 & 0,00 & 0,00 & 0,00 & 0,00 \\
+#6 & 100,00 & 95,74 & 92,59 & 85,71 & 51,56 \\
+#7 & 100,00 & 0,00 & 0,00 & 0,00 & 0,00 \\
+#8 & 100,00 & 97,67 & 90,37 & 71,25 & 62,64 \\
+#\bottomrule
+#\end{tabular}
+
+# recall
+#\begin{tabular}{lrrrrr}
+#\toprule
+#Threshold & 0,100000 & 0,300000 & 0,400000 & 0,500000 & 0,600000 \\
+#Test Case &  &  &  &  &  \\
+#\midrule
+#0 & 0,00 & 79,89 & 95,40 & 99,43 & 100,00 \\
+#1 & 0,00 & 93,33 & 100,00 & 100,00 & 100,00 \\
+#2 & 0,00 & 57,05 & 99,36 & 100,00 & 100,00 \\
+#3 & 100,00 & 100,00 & 100,00 & 100,00 & 100,00 \\
+#4 & 0,00 & 74,53 & 100,00 & 100,00 & 100,00 \\
+#5 & 100,00 & 100,00 & 100,00 & 100,00 & 100,00 \\
+#6 & 0,00 & 34,09 & 94,70 & 100,00 & 100,00 \\
+#7 & 100,00 & 100,00 & 100,00 & 100,00 & 100,00 \\
+#8 & 0,00 & 49,12 & 98,83 & 100,00 & 100,00 \\
+#\bottomrule
+#\end{tabular}
